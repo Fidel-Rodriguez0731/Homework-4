@@ -114,6 +114,53 @@ async function load(){
   } catch (err) {
     console.error("Error loading Game News section:", err);
   }
+
+
+  //Section#3
+  try {
+    const similarResponse = await fetch(`https://api.gamebrain.co/v1/games/${gameID}/similar?api-key=${apiKey}`);
+    if (similarResponse.ok) {
+      const similarData = await similarResponse.json();
+      const similarList = similarData.results || similarData.games || similarData.similar || similarData || [];
+
+      const gameCards = document.querySelectorAll(".game-grid .game-card");
+
+      gameCards.forEach((card, index) => {
+        if (similarList[index]) {
+          const item = similarList[index];
+
+          const cardTitle = card.querySelector("h3");
+          const metaSpans = card.querySelectorAll(".game-card-meta span");
+
+          // only the first card
+          if (index === 0) {
+            const cardImg = card.querySelector("img");
+            if (cardImg) {
+              cardImg.src = item.image || item.background_image || item.cover || '';
+              cardImg.alt = item.name || item.title || 'Similar Game';
+            }
+          }
+
+          // Title
+          if (cardTitle) {
+            cardTitle.textContent = item.name || item.title || 'N/A';
+          }
+
+          // Meta Spans (Year and Rating)
+          if (metaSpans.length >= 2) {
+            const releaseStr = item.released || item.release_date || item.year || '';
+            metaSpans[0].textContent = formatYearFromStr(String(releaseStr));
+
+            const rawRating = item.rating || item.score || item.metacritic || 0;
+            const normalizedRating = rawRating > 1 && rawRating <= 5 ? rawRating / 5 : (rawRating > 5 ? rawRating / 100 : rawRating);
+            metaSpans[1].textContent = formatPercentage(normalizedRating);
+          }
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Error loading Similar Games section:", err);
+  }
 }
 
 load();
