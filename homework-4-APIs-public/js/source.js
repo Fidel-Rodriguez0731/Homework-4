@@ -22,6 +22,7 @@ async function load(){
     let apiKey = localStorage.getItem("api_key");
     
     // **************** Write you code below **************** 
+  // Section#1
   try {
     const response = await fetch(`https://api.gamebrain.co/v1/games/${gameID}?api-key=${apiKey}`);
     if (!response.ok) return;
@@ -74,6 +75,44 @@ async function load(){
 
   } catch (err) {
     console.error("Error loading Hero section:", err);
+  }
+
+  //Section#2
+
+  try {
+    const newsResponse = await fetch(`https://api.gamebrain.co/v1/games/${gameID}/news?api-key=${apiKey}`);
+    if (newsResponse.ok) {
+      const newsData = await newsResponse.json();
+      const newsList = newsData.news || newsData.results || newsData || [];
+
+      const newsCards = document.querySelectorAll(".news-list .news-card");
+
+      newsCards.forEach((card, index) => {
+        if (index < 3 && newsList[index]) {
+          const item = newsList[index];
+
+          const newsImg = card.querySelector("img");
+          const newsTitle = card.querySelector("h3");
+          const newsDate = card.querySelector(".news-published");
+
+          if (newsImg) {
+            newsImg.src = item.image || item.urlToImage || item.cover || '';
+            newsImg.alt = item.title || 'News Image';
+          }
+
+          if (newsTitle) {
+            newsTitle.textContent = item.title || 'Untitled News';
+          }
+
+          if (newsDate) {
+            const pubDate = item.published || item.publishedAt || item.date || 'N/A';
+            newsDate.textContent = `Published ${pubDate}`;
+          }
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Error loading Game News section:", err);
   }
 }
 
